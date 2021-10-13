@@ -1,3 +1,7 @@
+# Created by https://www.toptal.com/developers/gitignore/api/oracleforms
+# Edit at https://www.toptal.com/developers/gitignore?templates=oracleforms
+
+### OracleForms ###
 # Compiled Form Modules
 *.fmx
 
@@ -6,3 +10,5 @@
 
 # Compiled Pre-Linked Libraries
 *.plx
+
+# End of https://www.toptal.com/developers/gitignore/api/oracleforms
