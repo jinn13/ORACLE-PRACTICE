@@ -1,0 +1,50 @@
+-- PRODETAIL 테이블에 데이터 삽입 시 PRODUCT 테이블에 재고 수량이 업데이트 되도록 트리거를 생성한다. 
+CREATE OR REPLACE TRIGGER TRG_PRO_STOCK
+AFTER INSERT ON PRODETAIL
+FOR EACH ROW
+DECLARE 
+    SNUM PRODUCT.STOCK%TYPE;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(:NEW.STATUS||'되었습니다. 수량은 '|| :NEW.AMOUNT||', 상품코드는 '|| :NEW.PCODE||'입니다.');
+    
+        SELECT STOCK 
+        INTO SNUM
+        FROM PRODUCT
+        WHERE PCODE=:NEW.PCODE;
+    
+    -- 상품이 입고된 경우
+    IF(:NEW.STATUS='입고') THEN        
+        UPDATE PRODUCT 
+        SET STOCK = STOCK+:NEW.AMOUNT
+        WHERE PCODE=:NEW.PCODE;
+    END IF;
+    -- 상품이 출고된 경우
+    IF(:NEW.STATUS='출고' AND SNUM-:NEW.AMOUNT>0) THEN
+        UPDATE PRODUCT 
+        SET STOCK = STOCK-:NEW.AMOUNT 
+        WHERE PCODE=:NEW.PCODE;
+    ELSE DBMS_OUTPUT.PUT_LINE('상품 수량이 음수입니다. 작업이 취소됩니다.');
+--         DELETE PRODETAIL WHERE PCODE=:NEW.PCODE;
+    END IF;
+    -- 상품수량이 -가 되었을 경우
+--    IF(SNUM<0) THEN
+--        DBMS_OUTPUT.PUT_LINE('상품 수량이 음수입니다.');
+--    END IF;
+
+END;
+/
+-- 2번상품이 오늘 날짜로 20개가 입고
+INSERT INTO PRODETAIL VALUES(SEQ_DCODE.NEXTVAL, SYSDATE, 20, '입고', 2);
+
+-- 2번 상품이 오늘 날짜로 25개가 출고
+INSERT INTO PRODETAIL VALUES(SEQ_DCODE.NEXTVAL, SYSDATE, 25, '출고', 2);
+
+-- 2번 상품이 오늘 날짜로 25개가 출고(-가 되었을 경우 이건 나중에 풀어보기!)
+INSERT INTO PRODETAIL VALUES(SEQ_DCODE.NEXTVAL, SYSDATE, 20, '출고', 2);
+--DELETE PRODETAIL WHERE DCODE=29;
+
+SELECT * FROM PRODUCT;
+SELECT * FROM PRODETAIL;
+
+ROLLBACK;
+COMMIT;
